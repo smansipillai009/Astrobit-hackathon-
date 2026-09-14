@@ -1,0 +1,110 @@
+# =============================================================================
+# Pipeline configuration — exoplanet detection hackathon
+# Every stage script reads this file. Change values here, not hardcoded in src/.
+# =============================================================================
+
+team_name: "changeme"          # lowercase, no spaces — used in output filename
+
+# -----------------------------------------------------------------------------
+# Data paths
+# -----------------------------------------------------------------------------
+data:
+  train_dir: "data/train_pack/train"
+  train_labels: "data/train_pack/train_labels.csv"
+  train_truth: "data/train_pack/train_truth.csv"
+
+  dev_dir: "data/dev_pack/dev"
+  dev_labels: "data/dev_pack/dev_labels.csv"
+  dev_truth: "data/dev_pack/dev_truth.csv"
+
+  private_dir: "data/private_pack"
+
+  # columns from *_labels.csv that are safe to use as features.
+  # 'label' and 'koi_disposition' are intentionally excluded — see writeup.md.
+  safe_label_columns: ["kepmag", "teff", "logg", "radius"]
+
+# -----------------------------------------------------------------------------
+# Caching — avoid recomputing expensive stages on every run
+# -----------------------------------------------------------------------------
+cache:
+  dir: "cache"
+  cleaned_flux: "cache/cleaned"          # Stage A output, one file per star
+  detrended_flux: "cache/detrended"       # Stage B output
+  period_search_results: "cache/bls"       # Stage C output (per-star candidate table)
+  overwrite: false                          # set true to force recompute
+
+# -----------------------------------------------------------------------------
+# Stage A — cleaning
+# -----------------------------------------------------------------------------
+cleaning:
+  quality_mask: "strict"        # "strict" = keep only quality == 0
+  drop_nan_flux: true
+  per_quarter_normalize: true   # divide each quarter's flux by its own median
+
+# -----------------------------------------------------------------------------
+# Stage B — detrending
+# -----------------------------------------------------------------------------
+detrending:
+  method: "wotan"                 # "wotan" | "lightkurve"
+  wotan_method: "biweight"        # biweight | cosine | etc. (wotan filter type)
+  # window length in days — set relative to longest expected transit duration
+  # (truth durations range ~3-13 hrs); keep well above that so real transits
+  # are not filtered out along with stellar variability.
+  window_length_days: 0.75
+  sigma_clip: 5.0                 # outlier clipping threshold applied pre-detrend
+
+# -----------------------------------------------------------------------------
+# Stage C — period search (coarse-to-fine BLS/TLS)
+# -----------------------------------------------------------------------------
+period_search:
+  method: "tls"                   # "tls" (transitleastsquares) | "bls" (astropy BoxLeastSquares)
+  period_min_days: 0.5
+  period_max_days: 400.0
+
+  coarse:
+    n_periods: 5000                # sparse grid size for the wide sweep
+  fine:
+    top_n_peaks: 5                  # number of coarse-search peaks to refine
+    window_frac: 0.02                # fine sweep spans +/- this fraction of the peak period
+    n_periods: 2000                   # resolution within each fine window
+
+  # validation stars — used by the mandatory "does the search actually work"
+  # sanity check before running at scale, one kepid per truth bin
+  validation_kepids:
+    shallow: null        # fill with a kepid from train_truth.csv bin=shallow
+    mid: null
+    deep: null
+    earth_analog: null
+
+# -----------------------------------------------------------------------------
+# Stage D — vetting
+# -----------------------------------------------------------------------------
+vetting:
+  odd_even_max_sigma_diff: 3.0     # flag if odd/even depth differs by more than this many sigma
+  check_secondary_eclipse: true
+  check_per_quarter_recurrence: true
+  hard_reject: false                 # if true, drop failing candidates before Stage E;
+                                      # if false (default), pass vetting scores as features instead
+
+# -----------------------------------------------------------------------------
+# Stage F — model
+# -----------------------------------------------------------------------------
+model:
+  type: "xgboost"                # "xgboost" | "lightgbm"
+  random_seed: 42
+  calibration: "isotonic"        # "isotonic" | "platt" | null
+  train_val_split: "use_dev"     # train on train_pack, validate/tune threshold on dev_pack
+  params:
+    n_estimators: 300
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+
+# -----------------------------------------------------------------------------
+# Stage G — submission
+# -----------------------------------------------------------------------------
+submission:
+  output_path: "outputs/submission_{team_name}.csv"
+  confidence_floor: 0.01           # avoid hard 0.0/1.0 extremes, keeps PR-AUC well-behaved
+  confidence_ceiling: 0.99
