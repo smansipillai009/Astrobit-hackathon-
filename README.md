@@ -2,8 +2,7 @@
 
 Detects and characterizes transiting exoplanets in raw Kepler SAP-flux
 photometry. Built against the schema in `Problem_Statement.pdf` and
-`Submission_Format.pdf` before the real data packs were available —
-point it at `train_pack/`, `dev_pack/`, `private_pack/` once you have them.
+`Submission_Format.pdf` 
 
 ## Pipeline
 
@@ -32,20 +31,49 @@ For the config-driven workflow, keep the pipeline and packs in this relative
 layout:
 
 ```
-workspace/
+Astrobit-hackathon-LaLaLand-2026/
+├── __pycache__/
+├── starter_notebook  
 ├── private_pack/                         # 87 parquet files (including nested folders)
-└── Initial docs/
-    ├── train_pack/
-    │   ├── train_labels.csv
-    │   ├── train_truth.csv
-    │   └── train/*.parquet
-    ├── dev_pack/
-    │   ├── dev_labels.csv
-    │   ├── dev_truth.csv
-    │   └── dev/*.parquet
-    └── exo_pipeline (1)/exo_pipeline/
-        ├── config.yaml
-        └── main.py
+├── train_pack/
+│   ├── train_labels.csv
+│   ├── train_truth.csv
+│   └── train/*.parquet
+├── dev_pack/
+|   ├── dev_labels.csv
+|   ├── dev_truth.csv
+|   └── dev/*.parquet
+|── pipeline/
+|   ├──__pycache__/
+|   └── __init__
+|   └── bls_search.py
+|   └── data_io.py
+|   └── detrend.py
+|   └── features.py
+|   └── run.py
+|   └── vetting.py
+├── outputs/
+|   ├── model.pkl
+|   ├── predictions_dev.csv
+|   └── predictions_private.csv
+|   └── predictions_private_t005.csv
+|   └── predictions_private_t035.csv
+|   └── submission_lalaland.csv
+|   └── train_features.csv
+├── .gitignore
+├── writeup.md
+├── README.md
+├── requirements.txt
+├── config.yaml
+├── evaluate_on_dev.py
+├── main.py
+├── make_submission.py
+├── predict.py 
+├── test_synthetic.py  
+├── train_classifier.py
+
+
+
 ```
 
 The paths in `config.yaml` are relative to that file. Run the reproducible
@@ -120,9 +148,6 @@ The final checked-in run processes 87 private stars and writes
 keep the model, prediction, and submission paths consistent with the config.
 
 See [writeup.md](./writeup.md) for the methodology and known limitations.
-`make_submission.py` runs the organizers' own validation assertions
-(exact row count, star_id format, confidence range, no flat confidence
-column, etc.) before writing the file — fix anything it complains about.
 
 ## Data contract
 
@@ -178,3 +203,9 @@ evaluate_on_dev.py   - threshold tuning + characterization scoring on dev_pack
 make_submission.py   - format + validate the final submission CSV
 requirements.txt     - pinned dependencies
 ```
+
+Author
+Mansi Pillai  
+3rd Year 
+Dept. of Mechanical Engineering
+IET DAVV Indore
