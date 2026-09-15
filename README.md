@@ -158,34 +158,6 @@ the corresponding `*_truth.csv` file where `injected == 1`; catalog
 Pack discovery is recursive so both flat packs and the provided nested
 `train/` and `dev/` layouts work.
 
-## Known limitations / where to spend extra time if you have it
-
-1. **Depth/duration precision near the noise floor.** Injection testing
-   (`test_synthetic.py`) showed period recovery is solid (within 0.1% of
-   truth, well inside the competition's 2% tolerance), but at some noise
-   draws the BLS duration grid can lock onto a wider-than-true box,
-   diluting the depth estimate. If you have time: after fixing
-   period+t0, do a proper least-squares trapezoid-transit refit (e.g.
-   `scipy.optimize.curve_fit`) instead of relying on the BLS duration
-   grid's own depth estimate — this is the single highest-value
-   improvement for your characterization score.
-2. **No GP-based detrending.** The current detrender is a fast iterative
-   median-filter approach. A Gaussian Process (e.g. `celerite2`) fit to
-   the out-of-transit flux would likely recover more of the shallow
-   Earth-analog signals the difficulty breakdown rewards, at the cost of
-   more compute per star — worth trying if step 2's classifier
-   cross-val AUC looks weak on the shallow-depth subset.
-3. **No centroid-shift or catalogue cross-match.** Both are required for
-   the optional "Ultimate Challenge" bonus (independent candidate). Not
-   attempted here since it needs the public KOI/TOI/EB catalogues and is
-   explicitly a separate, optional, human-judged track — worth doing
-   only after the core submission is solid and validated.
-4. **Confidence calibration.** The classifier's raw `predict_proba` is
-   used as-is. If cross-val shows it's poorly calibrated (check a
-   reliability diagram), wrap it in
-   `sklearn.calibration.CalibratedClassifierCV` — a few extra lines, and
-   PR-AUC is a big chunk of your score.
-
 ## Files
 
 ```
@@ -204,8 +176,10 @@ make_submission.py   - format + validate the final submission CSV
 requirements.txt     - pinned dependencies
 ```
 
-Author
+## Author
+```
 Mansi Pillai  
 3rd Year 
 Dept. of Mechanical Engineering
 IET DAVV Indore
+```
