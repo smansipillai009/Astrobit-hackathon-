@@ -1,0 +1,8 @@
+numpy==2.4.4
+scipy==1.17.1
+pandas==3.0.2
+pyarrow==25.0.1
+astropy==8.0.1
+scikit-learn==1.8.0
+lightgbm==4.7.0
+PyYAML==6.0.2

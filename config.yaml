@@ -1,0 +1,31 @@
+# Paths are relative to this file. Keep the raw packs outside version control.
+team_name: "lalaland"
+
+submission:
+  # Per-bin weighted dev objective: shallow and earth_analog positives are
+  # weighted 2x because the competition emphasizes those difficulty bands.
+  fixed_threshold: 0.25
+  positive_bin_weights:
+    shallow: 2.0
+    earth_analog: 2.0
+    mid: 1.0
+    deep: 1.0
+
+data:
+  train_dir: "../../train_pack"
+  train_labels: "../../train_pack/train_labels.csv"
+  train_truth: "../../train_pack/train_truth.csv"
+  dev_dir: "../../dev_pack"
+  dev_labels: "../../dev_pack/dev_labels.csv"
+  dev_truth: "../../dev_pack/dev_truth.csv"
+  private_dir: "../../../private_pack"
+
+outputs:
+  directory: "outputs"
+  model: "outputs/model.pkl"
+  train_features: "outputs/train_features.csv"
+  dev_predictions: "outputs/predictions_dev.csv"
+  private_predictions: "outputs/predictions_private.csv"
+
+runtime:
+  workers: 4

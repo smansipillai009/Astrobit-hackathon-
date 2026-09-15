@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pkl
+*.csv
+!train_labels_example.csv
+train_pack/
+dev_pack/
+private_pack/
